@@ -16,6 +16,9 @@ import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.MediaController;
+import android.os.PowerManager;
+import android.content.Context;
+import android.net.wifi.WifiManager;
 
 public class SimpleAudioStream extends Activity implements
 		MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener,
@@ -25,6 +28,7 @@ public class SimpleAudioStream extends Activity implements
 	private String TAG = getClass().getSimpleName();
 	private MediaPlayer mMediaPlayer = null;
 	private MediaController mMediaController = null;
+	private WifiLock mWifiLock = null;
 	private LinearLayout mAudioView;
 	private View mMediaControllerView;
 	private String mAudioUrl;
@@ -83,6 +87,9 @@ public class SimpleAudioStream extends Activity implements
 		try {
 			if (mMediaPlayer == null) {
 				mMediaPlayer = new MediaPlayer();
+				mWifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE))
+					.createWifiLock(WifiManager.WIFI_MODE_FULL, "mylock");
+				mWifiLock.acquire();
 			} else {
 				try {
 					mMediaPlayer.stop();
@@ -97,6 +104,7 @@ public class SimpleAudioStream extends Activity implements
 			mMediaPlayer.setOnCompletionListener(this);
 			mMediaPlayer.setOnBufferingUpdateListener(this);
 			mMediaPlayer.setOnErrorListener(this);
+			mMediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
 			mMediaController = new MediaController(this);
 
 			mMediaPlayer.prepareAsync();
@@ -198,10 +206,12 @@ public class SimpleAudioStream extends Activity implements
 			try {
 				mMediaPlayer.reset();
 				mMediaPlayer.release();
+				mWifiLock.release();
 			} catch (Exception e) {
 				Log.e(TAG, e.toString());
 			}
 			mMediaPlayer = null;
+			mWifiLock = null;
 		}
 	}
 
@@ -270,6 +280,7 @@ public class SimpleAudioStream extends Activity implements
 			mMediaPlayer.stop();
 			mMediaPlayer.reset();
 			mMediaPlayer.release();
+			mWifiLock.release();
 		} catch(Exception e) {
 			Log.e(TAG, e.toString());
 		}
