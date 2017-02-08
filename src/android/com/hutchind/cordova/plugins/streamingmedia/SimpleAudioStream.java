@@ -19,6 +19,7 @@ import android.widget.MediaController;
 import android.os.PowerManager;
 import android.content.Context;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.WifiLock;
 
 public class SimpleAudioStream extends Activity implements
 		MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener,
